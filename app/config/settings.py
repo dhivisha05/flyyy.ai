@@ -107,9 +107,10 @@ INDUSTRY_CONFIGS: Dict[str, Dict] = {
     "construction": {
         "table_detection_keywords": ["description", "item", "equipment", "sl no", "particulars"],
         "field_mapping": {
-            "product": ["description", "item name", "equipment", "particulars", "item"],
+            "description": ["description", "item name", "equipment", "particulars", "item"],
             "brand": ["brand", "make", "manufacturer"],
             "quantity": ["qty", "quantity", "nos"],
+            "unit": ["unit", "uom", "measurement"],
             "category": ["category", "group", "system"]
         },
         "thresholds": {
@@ -119,9 +120,10 @@ INDUSTRY_CONFIGS: Dict[str, Dict] = {
     "retail": {
         "table_detection_keywords": ["sku", "product", "stock", "upc", "barcode"],
         "field_mapping": {
-            "product": ["product name", "item description", "sku name"],
+            "description": ["product name", "item description", "sku name"],
             "brand": ["brand", "manufacturer", "label"],
             "quantity": ["stock level", "count", "remaining", "inventory"],
+            "unit": ["unit", "pkg", "size"],
             "category": ["department", "aisle", "section"]
         },
         "thresholds": {
@@ -131,9 +133,10 @@ INDUSTRY_CONFIGS: Dict[str, Dict] = {
     "default": {
         "table_detection_keywords": ["item", "qty", "description"],
         "field_mapping": {
-            "product": ["item", "description"],
+            "description": ["item", "description"],
             "brand": ["brand", "make"],
             "quantity": ["qty", "quantity"],
+            "unit": ["unit"],
             "category": ["category"]
         },
         "thresholds": {

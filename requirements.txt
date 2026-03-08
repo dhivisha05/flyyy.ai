@@ -6,4 +6,6 @@ pydantic==2.6.4
 rapidfuzz==3.6.2
 python-multipart==0.0.9
 loguru==0.7.2
-....
+langchain-openai
+langchain-google-genai
+python-dotenv

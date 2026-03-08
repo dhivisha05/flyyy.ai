@@ -11,21 +11,21 @@ def normalize_products(items):
 
     for item in items:
         found = False
-        item_product = item["product"]
+        item_desc = item["description"]
         item_brand = item["brand"]
 
         for existing in normalized:
-            # Check similarity between products
+            # Check similarity between descriptions
             score = fuzz.ratio(
-                str(item_product).lower(),
-                str(existing["product"]).lower()
+                str(item_desc).lower(),
+                str(existing["description"]).lower()
             )
 
-            # If products are very similar and brands match, merge quantities
+            # If descriptions are very similar and brands match, merge quantities
             if score >= SIMILARITY_THRESHOLD and item_brand == existing["brand"]:
                 # Keep the descriptive (longer) name
-                if len(str(item_product)) > len(str(existing["product"])):
-                    existing["product"] = item_product
+                if len(str(item_desc)) > len(str(existing["description"])):
+                    existing["description"] = item_desc
                 
                 existing["quantity"] += item["quantity"]
                 found = True

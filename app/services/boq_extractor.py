@@ -109,32 +109,29 @@ def extract_items(df: pd.DataFrame, header_row: int, field_mapping: Dict, thresh
     columns = identify_columns(df.columns.tolist(), field_mapping, threshold=threshold)
     logger.info(f"Column mapping: {columns}")
 
-    if "product" not in columns:
-        logger.warning("Product column not found — skipping sheet.")
-        return []
-
-    product_col = columns["product"]
+    desc_col = columns["description"]
     brand_col = columns.get("brand")
     qty_col = columns.get("quantity")
+    unit_col = columns.get("unit")
 
     # ── Multiline merge ──
-    df = merge_multiline_descriptions(df, product_col, qty_col)
+    df = merge_multiline_descriptions(df, desc_col, qty_col)
 
     items: List[Dict] = []
 
     for row in df.itertuples(index=False):
         try:
-            # ── Product ──
-            raw_product = _safe_get(row, df, product_col)
-            product = clean_text(raw_product)
+            # ── Description ──
+            raw_description = _safe_get(row, df, desc_col)
+            description = clean_text(raw_description)
 
             # Basic validation (empty, numeric, totals, sections)
-            if not is_valid_product(product):
+            if not is_valid_product(description):
                 continue
 
             # ── Material keyword check ──
-            if not contains_material_keyword(product):
-                logger.debug(f"Skipping non-material row: {product[:60]}")
+            if not contains_material_keyword(description):
+                logger.debug(f"Skipping non-material row: {description[:60]}")
                 continue
 
             # ── Quantity ──
@@ -148,12 +145,17 @@ def extract_items(df: pd.DataFrame, header_row: int, field_mapping: Dict, thresh
             raw_brand = _safe_get(row, df, brand_col) if brand_col else None
             brand = clean_text(raw_brand) or "Generic"
 
+            # ── Unit ──
+            raw_unit = _safe_get(row, df, unit_col) if unit_col else None
+            unit = clean_text(raw_unit) or "-"
+
             # ── Build item ──
             item = {
-                "product": product,
+                "description": description,
                 "brand": brand,
                 "quantity": quantity,
-                "category": classify_category(product),
+                "unit": unit,
+                "category": classify_category(description),
             }
             items.append(item)
 
@@ -191,7 +193,7 @@ def consolidate_duplicates(items: List[Dict]) -> List[Dict]:
     df = pd.DataFrame(items)
 
     grouped = (
-        df.groupby(["product", "brand"], as_index=False)
+        df.groupby(["description", "brand", "unit"], as_index=False)
         .agg({"quantity": "sum", "category": "first"})
     )
 
@@ -204,4 +206,12 @@ def group_by_category(items: List[Dict]) -> Dict[str, List[Dict]]:
     for item in items:
         grouped[item["category"]].append(item)
 
-    return dict(grouped)
+
+def read_excel_to_text(file_path):
+    # This reads the Excel file
+    df = pd.read_excel(file_path)
+    
+    # This turns the whole file into a big block of text
+    messy_text = df.to_string()
+    
+    return messy_text

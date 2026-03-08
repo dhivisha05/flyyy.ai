@@ -6,10 +6,12 @@ from loguru import logger
 from ..config.settings import get_config
 from ..services.boq_table_detector import detect_header_row
 from ..services.column_identifier import identify_columns
-from ..services.boq_extractor import extract_items, consolidate_duplicates, group_by_category
+from ..services.boq_extractor import extract_items, consolidate_duplicates, group_by_category, read_excel_to_text
 from ..services.excel_analyzer import process_excel
 from ..utils.product_normalizer import normalize_products
-from ..models.boq_schema import ExtractedItem
+from ..models.boq_schema import BOQList, BOQItem
+from ..graphs.excel_graph import extract_with_ai
+import shutil
 
 router = APIRouter()
 
@@ -85,3 +87,19 @@ async def extract_excel_data(
     except Exception as e:
         logger.exception(f"Extraction failed: {e}")
         raise HTTPException(status_code=500, detail="Extraction failed.")
+
+
+@router.post("/upload-excel")
+async def upload_excel_file(file: UploadFile):
+    # 1. Save the file temporarily
+    with open("temp.xlsx", "wb") as buffer:
+        shutil.copyfileobj(file.file, buffer)
+        
+    # 2. Read it into text (Step 2)
+    messy_text = read_excel_to_text("temp.xlsx")
+    
+    # 3. Send to AI to clean up (Step 3)
+    final_boq = extract_with_ai(messy_text)
+    
+    # 4. Send the neat list back to the user!
+    return final_boq

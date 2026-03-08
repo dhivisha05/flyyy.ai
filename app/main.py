@@ -2,6 +2,9 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from fastapi.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv
+
+load_dotenv()
 
 from .api.routes import router
 
@@ -18,10 +21,12 @@ app.add_middleware(
 # ─── API routes ───
 app.include_router(router)
 
-# ─── Static files ───
-app.mount("/static", StaticFiles(directory="app/static"), name="static")
+# ─── Static files (React Build) ───
+app.mount("/assets", StaticFiles(directory="boq-frontend/dist/assets"), name="assets")
 
-
-@app.get("/")
-async def serve_frontend():
-    return FileResponse("app/static/index.html")
+@app.get("/{full_path:path}")
+async def serve_frontend(full_path: str):
+    # Only serve index.html for non-API routes
+    if full_path.startswith("api"):
+        return None
+    return FileResponse("boq-frontend/dist/index.html")

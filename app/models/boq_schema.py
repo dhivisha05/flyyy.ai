@@ -1,10 +1,16 @@
 # ─── Pydantic Schema ───
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional
 
 
-class ExtractedItem(BaseModel):
-    product: str
-    brand: Optional[str] = "Generic"
-    quantity: float = 0
-    category: Optional[str] = "misc"
+# This is the rule for a single item
+class BOQItem(BaseModel):
+    description: str = Field(description="The name/description of the material")
+    brand: str = Field(description="The manufacturer or brand", default="Generic")
+    quantity: float = Field(description="The number amount")
+    unit: str = Field(description="How it is measured (like kg, meters, pieces)")
+    category: str = Field(description="EPC industry category", default="uncategorized")
+
+# This is the rule for the whole list
+class BOQList(BaseModel):
+    items: list[BOQItem]
